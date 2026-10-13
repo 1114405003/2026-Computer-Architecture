@@ -1,26 +1,56 @@
-# instructions/19_CLZ/
+# group05-CLZ
 
-| 項目 | 內容 |
+## 專案簡介
+
+本專案實作 CLZ（Count Leading Zeros，計算前導零）功能。程式接收一個
+32-bit `uint32_t` 無號整數，回傳從最高位元開始連續的零數量；當輸入為
+`0x00000000` 時，依規格回傳 `32`。
+
+目前的 C baseline 使用固定的 16、8、4、2、1 位元分段檢查方式，在
+`O(1)` 時間內完成計算，並包含 10 組測試案例，涵蓋一般輸入、最低位元
+為 1，以及全零輸入等情況。
+
+## 專案結構
+
+| 路徑 | 說明 |
 |---|---|
-| 指令名稱 | `CLZ` |
-| 題目類別 | 算術類 |
-| 運算元類型 | 一元 |
-| 輸入定義 | rs1 為 32-bit 位元向量 |
-| 語意公式 | `rd = 前導 0 的個數,rs1 = 0 時 rd = 32` |
+| [`src/clz.c`](./src/clz.c) | C baseline 實作與內建測試程式 |
+| [`instructions/19_CLZ/src/c_baseline/`](./instructions/19_CLZ/src/c_baseline/) | 分離的 `clz.c` 函式與 `main.c` 測試程式 |
+| [`instructions/19_CLZ/tests/`](./instructions/19_CLZ/tests/) | 測試向量與預期輸出 |
+| [`report/CP1.md`](./report/CP1.md) | CP1 演算法設計、測試結果與分析 |
 
-正式語意與測試向量見 [HOMEWORK.md 第六節](../../HOMEWORK.md#六題目語意規格)。
+## 編譯與執行
 
-> 實作內容(規格、C 參考實作、RV32IM 組合語言、測資)由負責該指令的小組於倉庫中建立。
->
-> 目錄內容:`README.md`(本檔,含語意與繳交說明)。
+### 直接執行目前的 C baseline
 
-## 小組資訊
+在專案根目錄執行：
 
-| 項目 | 內容 |
-|---|---|
-| 組名 | |
-| 組長 | |
-| 組員 | |
-| 分支 | `dev/<學號>`(各組員自行填寫) |
+```text
+gcc src/clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+./clz
+```
 
-> 分組確定後由教師填入。
+Windows 環境可使用：
+
+```text
+gcc src/clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+clz.exe
+```
+
+### 執行分離的函式與測試程式
+
+```text
+cd instructions/19_CLZ/src/c_baseline
+gcc clz.c main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+./clz
+```
+
+程式正常執行時會列出 10 組測試結果，例如：
+
+```text
+Test  1: CLZ(0x80000000) = 0
+Test 10: CLZ(0x00000000) = 32
+```
+
+完整預期輸出請參考
+[`instructions/19_CLZ/tests/expected_output.txt`](./instructions/19_CLZ/tests/expected_output.txt)。
