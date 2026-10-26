@@ -17,31 +17,33 @@
 | [`src/c_baseline/`](../src/c_baseline/) | CP1 的 `clz.c` 函式與 `main.c` 測試程式 |
 | [`test_vectors.txt`](./test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
 | [`expected_output.txt`](./expected_output.txt) | 測試程式的預期輸出 |
+| [`actual_output.txt`](./actual_output.txt) | LLVM MinGW clang 實際執行輸出 |
 | [`../report/CP1.md`](../report/CP1.md) | CP1 演算法設計、測試結果與分析 |
 
 ## 編譯與執行
 
 ### 直接執行目前的 C baseline
 
-在專案根目錄執行：
+在課程專題根目錄執行：
 
 ```text
-gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+gcc instructions/19_CLZ/src/c_baseline/clz.c instructions/19_CLZ/src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 ./clz
 ```
 
 Windows 環境可使用：
 
 ```text
-gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+gcc instructions/19_CLZ/src/c_baseline/clz.c instructions/19_CLZ/src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
 clz.exe
 ```
 
 ### 執行分離的函式與測試程式
 
+在 `instructions/19_CLZ` 目錄中執行：
+
 ```text
-cd instructions/19_CLZ
-gcc clz.c main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 ./clz
 ```
 
@@ -54,3 +56,6 @@ Test 10: CLZ(0x00000000) = 32 (expected 32) PASS
 
 完整預期輸出請參考
 [`expected_output.txt`](./expected_output.txt)。
+
+完整實際輸出請參考
+[`actual_output.txt`](./actual_output.txt)。

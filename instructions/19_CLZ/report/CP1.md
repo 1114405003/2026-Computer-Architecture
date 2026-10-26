@@ -60,20 +60,33 @@ uint32_t clz(uint32_t x);
 終端機預期輸出：
 
 ```text
-Test  1: CLZ(0x80000000) = 0
-Test  2: CLZ(0x40000000) = 1
-Test  3: CLZ(0x20000000) = 2
-Test  4: CLZ(0x10000000) = 3
-Test  5: CLZ(0x08000000) = 4
-Test  6: CLZ(0x01000000) = 7
-Test  7: CLZ(0x00100000) = 11
-Test  8: CLZ(0x00010000) = 15
-Test  9: CLZ(0x00000001) = 31
-Test 10: CLZ(0x00000000) = 32
+Test  1: CLZ(0x80000000) = 0 (expected 0) PASS
+Test  2: CLZ(0x40000000) = 1 (expected 1) PASS
+Test  3: CLZ(0x20000000) = 2 (expected 2) PASS
+Test  4: CLZ(0x10000000) = 3 (expected 3) PASS
+Test  5: CLZ(0x08000000) = 4 (expected 4) PASS
+Test  6: CLZ(0x01000000) = 7 (expected 7) PASS
+Test  7: CLZ(0x00100000) = 11 (expected 11) PASS
+Test  8: CLZ(0x00010000) = 15 (expected 15) PASS
+Test  9: CLZ(0x00000001) = 31 (expected 31) PASS
+Test 10: CLZ(0x00000000) = 32 (expected 32) PASS
+10/10 tests passed.
 ```
 
 10 組測試的預期結果皆符合 `rd = 32 - bit_length(rs1)`，且零輸入符合
 `rd = 32` 的特殊規格。
+
+### 3.1 實際編譯與執行
+
+使用 LLVM MinGW 23.1.4 的 `clang`，以 C11 及嚴格警告選項編譯：
+
+```text
+clang instructions/19_CLZ/src/c_baseline/clz.c instructions/19_CLZ/src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+clz.exe
+```
+
+實際執行結果為 **10/10 tests passed**，完整輸出保存於
+[`../tests/actual_output.txt`](../tests/actual_output.txt)。
 
 ## 4. 遭遇的問題與解法
 
