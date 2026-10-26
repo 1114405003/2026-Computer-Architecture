@@ -30,8 +30,8 @@ uint32_t clz(uint32_t x);
 
 ### 2.3 測試設計
 
-測試資料保存於 [`instructions/19_CLZ/tests/test_vectors.txt`](../instructions/19_CLZ/tests/test_vectors.txt)，
-預期輸出保存於 [`instructions/19_CLZ/tests/expected_output.txt`](../instructions/19_CLZ/tests/expected_output.txt)。
+測試資料保存於 [`tests/test_vectors.txt`](../tests/test_vectors.txt)，
+預期輸出保存於 [`tests/expected_output.txt`](../tests/expected_output.txt)。
 共 10 組測試，涵蓋：
 
 - 最高位元為 `1`，結果為 0。
@@ -40,6 +40,19 @@ uint32_t clz(uint32_t x);
 - 全零輸入，驗證特殊定義結果 32。
 
 ## 3. 結果與分析
+
+使用 [`tests/test_vectors.txt`](../tests/test_vectors.txt) 的 10 組向量，
+以 `src/c_baseline/clz.c` 搭配 `src/c_baseline/main.c` 執行；預期輸出保存
+於 [`tests/expected_output.txt`](../tests/expected_output.txt)。在有 GCC 的
+環境可執行：
+
+```text
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+./clz
+```
+
+輸出應與預期檔逐行一致，最後一組為
+`Test 10: CLZ(0x00000000) = 32`。
 
 | 測試 | 輸入 | 預期 CLZ | 分析 |
 |---:|---|---:|---|
@@ -87,6 +100,14 @@ Test 10: CLZ(0x00000000) = 32
 搜尋範圍縮小，所以不管輸入值是多少，都只需要固定幾次檢查。全部都是 0
 時沒有第一個 1，因此按照規格把答案定義成 32。
 
+## 5.1 5 Whys
+
+1. 為什麼要分段檢查？因為一次跳過 16、8、4、2 或 1 個位元較有效率。
+2. 為什麼輸入要使用 `uint32_t`？因為 CLZ 的定義固定在 32-bit 位元向量。
+3. 為什麼零輸入要特別處理？因為零沒有第一個 `1`，規格明確定義結果為 32。
+4. 為什麼至少準備 10 組測資？因為作業要求涵蓋一般案例與邊界案例。
+5. 為什麼要保留預期輸出檔？因為可以將實際執行結果逐行比對，避免只靠手算。
+
 ## 6. AI 使用說明
 
 - 工具：Copilot SDK in VS Code。
@@ -104,10 +125,10 @@ Test 10: CLZ(0x00000000) = 32
 
 | 組員 | 學號 | 負責內容 | 佔比 |
 |---|---|---|---:|
-| 李玉蓉（組長） | 1114405003 | CLZ 演算法設計與 C baseline 實作 | 25% |
-| 蔡珽州 | 1114405054 | 測試案例設計與測試結果整理 | 25% |
-| 吳軒宇 | 1114405005 | 報告撰寫與資料整理 | 25% |
-| 温冠筑 | 1114405021 | RISC-V 指令規格與後續實作規劃 | 25% |
+| 李玉蓉（組長） | 1114405003 | CLZ 演算法設計與 C baseline 實作 | 28.33% |
+| 蔡珽州 | 1114405054 | 測試案例設計與測試結果整理 | 28.33% |
+| 吳軒宇 | 1114405005 | 報告撰寫與資料整理 | 15% |
+| 温冠筑 | 1114405021 | RISC-V 指令規格與後續實作規劃 | 28.34% |
 
 開發分支：
 

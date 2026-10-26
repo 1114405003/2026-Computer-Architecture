@@ -14,10 +14,11 @@
 
 | 路徑 | 說明 |
 |---|---|
-| [`src/clz.c`](./src/clz.c) | C baseline 實作與內建測試程式 |
-| [`instructions/19_CLZ/src/c_baseline/`](./instructions/19_CLZ/src/c_baseline/) | 分離的 `clz.c` 函式與 `main.c` 測試程式 |
+| [`src/c_baseline/`](./src/c_baseline/) | C baseline 的 `clz.c` 函式與 `main.c` 測試程式 |
 | [`instructions/19_CLZ/tests/`](./instructions/19_CLZ/tests/) | 測試向量與預期輸出 |
 | [`report/CP1.md`](./report/CP1.md) | CP1 演算法設計、測試結果與分析 |
+| [`report/CP2.md`](./report/CP2.md) | CP2 RV32IM 實作與指令統計 |
+| [`report/CP3.md`](./report/CP3.md) | CP3 自訂指令規格、編碼與指令數比 |
 
 ## 編譯與執行
 
@@ -26,21 +27,21 @@
 在專案根目錄執行：
 
 ```text
-gcc src/clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 ./clz
 ```
 
 Windows 環境可使用：
 
 ```text
-gcc src/clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
 clz.exe
 ```
 
 ### 執行分離的函式與測試程式
 
 ```text
-cd instructions/19_CLZ/src/c_baseline
+cd src/c_baseline
 gcc clz.c main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 ./clz
 ```
@@ -54,3 +55,8 @@ Test 10: CLZ(0x00000000) = 32
 
 完整預期輸出請參考
 [`instructions/19_CLZ/tests/expected_output.txt`](./instructions/19_CLZ/tests/expected_output.txt)。
+
+## CP2 / CP3 補充
+
+- CP2：[`src/rv32im/clz.s`](./src/rv32im/clz.s)、[`tests/cp2_trace.py`](./tests/cp2_trace.py)、[`report/CP2.md`](./report/CP2.md)
+- CP3：[`spec/clz_spec.md`](./spec/clz_spec.md)、[`spec/clz_encoding.py`](./spec/clz_encoding.py)、[`report/CP3.md`](./report/CP3.md)

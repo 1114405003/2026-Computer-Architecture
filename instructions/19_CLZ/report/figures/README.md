@@ -11,7 +11,7 @@ baseline，因此本次沒有額外產生效能圖或圖片檔；測試結果以
 | [`CP1.md`](../CP1.md) | C baseline 的演算法、測試設計與結果分析 |
 | [`test_vectors.txt`](../../instructions/19_CLZ/tests/test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
 | [`expected_output.txt`](../../instructions/19_CLZ/tests/expected_output.txt) | 測試程式應產生的終端輸出 |
-| [`clz.c`](../../src/clz.c) | C baseline 參考實作 |
+| [`clz.c`](../../src/c_baseline/clz.c) | C baseline 參考實作 |
 
 ## 測試涵蓋範圍
 
@@ -46,7 +46,7 @@ Test 10: CLZ(0x00000000) = 32
 在專案根目錄編譯並執行 C baseline：
 
 ```text
-gcc -std=c11 -Wall -Wextra -pedantic src/clz.c -o clz
+gcc -std=c11 -Wall -Wextra -pedantic src/c_baseline/clz.c src/c_baseline/main.c -o clz
 ./clz
 ```
 

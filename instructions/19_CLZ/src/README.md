@@ -1,59 +1,74 @@
-# CLZ C Baseline
+# CLZ source code
 
-<<<<<<< Updated upstream:src/README.md
-=======
-本資料夾存放 CLZ（Count Leading Zeros）的 C 語言參考實作與測試程式，
-用於驗證功能是否符合規格。
+本資料夾包含 CLZ（Count Leading Zeros，計算前導零）的 CP1 與 CP2
+原始碼。CLZ 接收 32-bit 無號整數，回傳從最高位開始連續的零數量；
+輸入為 `0x00000000` 時依規格回傳 `32`。
 
->>>>>>> Stashed changes:instructions/CLZ/README.md
-- 對應 Checkpoint：CP1
-- 內容：CLZ 的 C 參考實作與內建測試程式
+## 目錄結構
 
-## 函式介面
+```text
+src/
+├── README.md
+├── c_baseline/
+│   ├── clz.c
+│   └── main.c
+└── rv32im/
+    ├── README.md
+    ├── clz.s
+    ├── clz_wrapper.c
+    └── clz_wrapper.h
+```
+
+## CP1：C baseline
+
+### 函式介面
 
 ```c
 uint32_t clz(uint32_t x);
 ```
 
-函式接收 32-bit 無號整數，回傳從最高位元開始連續的前導零數量。
-輸入為 `0x00000000` 時，依規格回傳 `32`。
+### 演算法
 
-## 實作方法
+[`c_baseline/clz.c`](./c_baseline/clz.c) 使用 16、8、4、2、1 位元的
+分段檢查。若目前區段全部為零，就累加該區段的位元數並將輸入左移
+相同位數，最後定位最高位的 `1`。輸入為零時直接回傳 `32`。
 
-實作依序檢查 16、8、4、2、1 位元區段。若目前區段全為零，
-就累加該區段的位元數並將輸入左移相同位數，藉此找出最高位的 `1`。
-輸入為零時直接回傳 `32`。
+### 編譯與執行
 
-## 編譯與執行
+在專案根目錄執行：
 
-```text
-gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
-./clz
+```powershell
+gcc src/c_baseline/clz.c src/c_baseline/main.c `
+    -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+.\clz.exe
 ```
 
-Windows：
+若 PowerShell 找不到 GCC，可先加入 MSYS2 UCRT64：
 
-```text
-gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
-clz.exe
+```powershell
+$env:Path = 'C:\msys64\ucrt64\bin;' + $env:Path
 ```
 
-## 測試案例
+CP1 使用 10 組測試向量，資料位於 [`../tests/`](../tests/)：
 
-完整測試向量保存於 [`../tests/test_vectors.txt`](../tests/test_vectors.txt)，
-測試程式會比對實際結果與預期結果，並在任一案例失敗時回傳非零狀態。
+- [`test_vectors.txt`](../tests/test_vectors.txt)：輸入向量。
+- [`expected_output.txt`](../tests/expected_output.txt)：預期輸出。
 
-| Test case | Input | Expected CLZ | 測試目的 |
-|---:|---|---:|---|
-| 1 | `0x80000000` | 0 | 最高位元為 1 |
-| 2 | `0x40000000` | 1 | 1 個前導零 |
-| 3 | `0x20000000` | 2 | 2 個前導零 |
-| 4 | `0x10000000` | 3 | 3 個前導零 |
-| 5 | `0x08000000` | 4 | nibble 邊界 |
-| 6 | `0x01000000` | 7 | byte 邊界 |
-| 7 | `0x00100000` | 11 | 非邊界位元位置 |
-| 8 | `0x00010000` | 15 | 16-bit 邊界 |
-| 9 | `0x00000001` | 31 | 僅最低位元為 1 |
-| 10 | `0x00000000` | 32 | 零輸入邊界案例 |
-| 11 | `0x00F00000` | 8 | 多個相鄰位元為 1 |
-| 12 | `0x0000FFFF` | 16 | 低 16 位元為 1 |
+## CP2：RV32IM baseline
+
+[`rv32im/`](./rv32im/) 是 CP2 的唯一 RV32IM 實作位置。它將 CP1
+演算法改寫為 RV32I 基礎指令，不使用 Zbb 的原生 `clz` 指令。
+
+CP2 的輸入與回傳值都使用 `a0`，詳細的組合語言、wrapper、測試方式與
+指令統計請參考 [`rv32im/README.md`](./rv32im/README.md)。
+
+## 相關測試與報告
+
+| 內容 | 路徑 |
+|---|---|
+| CP1 測試向量 | [`../tests/test_vectors.txt`](../tests/test_vectors.txt) |
+| CP1 預期輸出 | [`../tests/expected_output.txt`](../tests/expected_output.txt) |
+| CP2 trace runner | [`../tests/cp2_trace.py`](../tests/cp2_trace.py) |
+| CP1 報告 | [`../report/CP1.md`](../report/CP1.md) |
+| CP2 報告 | [`../report/CP2.md`](../report/CP2.md) |
+| CP3 規格 | [`../spec/README.md`](../spec/README.md) |

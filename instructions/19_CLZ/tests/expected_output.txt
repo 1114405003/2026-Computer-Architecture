@@ -1,0 +1,10 @@
+Test  1: CLZ(0x80000000) = 0
+Test  2: CLZ(0x40000000) = 1
+Test  3: CLZ(0x20000000) = 2
+Test  4: CLZ(0x10000000) = 3
+Test  5: CLZ(0x08000000) = 4
+Test  6: CLZ(0x01000000) = 7
+Test  7: CLZ(0x00100000) = 11
+Test  8: CLZ(0x00010000) = 15
+Test  9: CLZ(0x00000001) = 31
+Test 10: CLZ(0x00000000) = 32

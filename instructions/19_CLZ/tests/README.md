@@ -1,9 +1,10 @@
 # CLZ 測試資料
 
-本資料夾整合以下兩份內容：
+本資料夾整合以下測試資料：
 
-- `19_CLZ/README.md`：CLZ 指令與 C baseline 實作說明。
-- `19_CLZ/tests/README.md`：測試向量、邊界值與預期輸出說明。
+- `test_vectors.txt`：10 組輸入向量。
+- `expected_output.txt`：對應的預期輸出。
+- `cp2_trace.py`：CP2 RV32I trace runner。
 
 ## CLZ 指令規格
 
@@ -39,7 +40,7 @@ gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 
 ## 測試案例
 
-目前共有 12 組測試，表格記錄每組輸入與預期 CLZ 結果：
+目前共有 10 組測試，表格記錄每組輸入與預期 CLZ 結果：
 
 | 測試 | 輸入 | 預期輸出 | 測試目的 |
 |---:|---|---:|---|
@@ -68,5 +69,5 @@ gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 所有測試正確時，最後應輸出：
 
 ```text
-12/12 tests passed.
+10/10 tests passed.
 ```
