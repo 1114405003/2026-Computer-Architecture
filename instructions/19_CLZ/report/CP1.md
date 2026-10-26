@@ -7,9 +7,6 @@
 
 ## 2. 設計內容
 
-CP1 原始碼位於 [`../src/c_baseline/`](../src/c_baseline/)，包含 `clz.c`
-參考實作與 `main.c` 測試程式。
-
 ### 2.1 CLZ 語意
 
 CLZ（Count Leading Zeros）接收一個 32-bit `uint32_t`，回傳從最高位元開始
@@ -33,8 +30,8 @@ uint32_t clz(uint32_t x);
 
 ### 2.3 測試設計
 
-測試資料保存於 [`../tests/test_vectors.txt`](../tests/test_vectors.txt)，
-預期輸出保存於 [`../tests/expected_output.txt`](../tests/expected_output.txt)。
+測試資料保存於 [`tests/test_vectors.txt`](../tests/test_vectors.txt)，
+預期輸出保存於 [`tests/expected_output.txt`](../tests/expected_output.txt)。
 共 10 組測試，涵蓋：
 
 - 最高位元為 `1`，結果為 0。
@@ -43,6 +40,19 @@ uint32_t clz(uint32_t x);
 - 全零輸入，驗證特殊定義結果 32。
 
 ## 3. 結果與分析
+
+使用 [`tests/test_vectors.txt`](../tests/test_vectors.txt) 的 10 組向量，
+以 `src/c_baseline/clz.c` 搭配 `src/c_baseline/main.c` 執行；預期輸出保存
+於 [`tests/expected_output.txt`](../tests/expected_output.txt)。在有 GCC 的
+環境可執行：
+
+```text
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+./clz
+```
+
+輸出應與預期檔逐行一致，最後一組為
+`Test 10: CLZ(0x00000000) = 32`。
 
 | 測試 | 輸入 | 預期 CLZ | 分析 |
 |---:|---|---:|---|
@@ -60,33 +70,20 @@ uint32_t clz(uint32_t x);
 終端機預期輸出：
 
 ```text
-Test  1: CLZ(0x80000000) = 0 (expected 0) PASS
-Test  2: CLZ(0x40000000) = 1 (expected 1) PASS
-Test  3: CLZ(0x20000000) = 2 (expected 2) PASS
-Test  4: CLZ(0x10000000) = 3 (expected 3) PASS
-Test  5: CLZ(0x08000000) = 4 (expected 4) PASS
-Test  6: CLZ(0x01000000) = 7 (expected 7) PASS
-Test  7: CLZ(0x00100000) = 11 (expected 11) PASS
-Test  8: CLZ(0x00010000) = 15 (expected 15) PASS
-Test  9: CLZ(0x00000001) = 31 (expected 31) PASS
-Test 10: CLZ(0x00000000) = 32 (expected 32) PASS
-10/10 tests passed.
+Test  1: CLZ(0x80000000) = 0
+Test  2: CLZ(0x40000000) = 1
+Test  3: CLZ(0x20000000) = 2
+Test  4: CLZ(0x10000000) = 3
+Test  5: CLZ(0x08000000) = 4
+Test  6: CLZ(0x01000000) = 7
+Test  7: CLZ(0x00100000) = 11
+Test  8: CLZ(0x00010000) = 15
+Test  9: CLZ(0x00000001) = 31
+Test 10: CLZ(0x00000000) = 32
 ```
 
 10 組測試的預期結果皆符合 `rd = 32 - bit_length(rs1)`，且零輸入符合
 `rd = 32` 的特殊規格。
-
-### 3.1 實際編譯與執行
-
-使用 LLVM MinGW 23.1.4 的 `clang`，以 C11 及嚴格警告選項編譯：
-
-```text
-clang instructions/19_CLZ/src/c_baseline/clz.c instructions/19_CLZ/src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
-clz.exe
-```
-
-實際執行結果為 **10/10 tests passed**，完整輸出保存於
-[`../tests/actual_output.txt`](../tests/actual_output.txt)。
 
 ## 4. 遭遇的問題與解法
 
@@ -102,6 +99,14 @@ clz.exe
 方式檢查 8 格、4 格、2 格，最後檢查 1 格。這像是在猜數字範圍，每次把
 搜尋範圍縮小，所以不管輸入值是多少，都只需要固定幾次檢查。全部都是 0
 時沒有第一個 1，因此按照規格把答案定義成 32。
+
+## 5.1 5 Whys
+
+1. 為什麼要分段檢查？因為一次跳過 16、8、4、2 或 1 個位元較有效率。
+2. 為什麼輸入要使用 `uint32_t`？因為 CLZ 的定義固定在 32-bit 位元向量。
+3. 為什麼零輸入要特別處理？因為零沒有第一個 `1`，規格明確定義結果為 32。
+4. 為什麼至少準備 10 組測資？因為作業要求涵蓋一般案例與邊界案例。
+5. 為什麼要保留預期輸出檔？因為可以將實際執行結果逐行比對，避免只靠手算。
 
 ## 6. AI 使用說明
 
@@ -120,10 +125,10 @@ clz.exe
 
 | 組員 | 學號 | 負責內容 | 佔比 |
 |---|---|---|---:|
-| 李玉蓉（組長） | 1114405003 | CLZ 演算法設計與 C baseline 實作 | 25% |
-| 蔡珽州 | 1114405054 | 測試案例設計與測試結果整理 | 25% |
-| 吳軒宇 | 1114405005 | 報告撰寫與資料整理 | 25% |
-| 温冠筑 | 1114405021 | RISC-V 指令規格與後續實作規劃 | 25% |
+| 李玉蓉（組長） | 1114405003 | CLZ 演算法設計與 C baseline 實作 | 28.33% |
+| 蔡珽州 | 1114405054 | 測試案例設計與測試結果整理 | 28.33% |
+| 吳軒宇 | 1114405005 | 報告撰寫與資料整理 | 15% |
+| 温冠筑 | 1114405021 | RISC-V 指令規格與後續實作規劃 | 28.34% |
 
 開發分支：
 

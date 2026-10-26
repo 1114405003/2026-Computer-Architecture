@@ -9,8 +9,8 @@ baseline，因此本次沒有額外產生效能圖或圖片檔；測試結果以
 | 資料 | 說明 |
 |---|---|
 | [`CP1.md`](../CP1.md) | C baseline 的演算法、測試設計與結果分析 |
-| [`test_vectors.txt`](../../tests/test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
-| [`expected_output.txt`](../../tests/expected_output.txt) | 測試程式應產生的終端輸出 |
+| [`test_vectors.txt`](../../instructions/19_CLZ/tests/test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
+| [`expected_output.txt`](../../instructions/19_CLZ/tests/expected_output.txt) | 測試程式應產生的終端輸出 |
 | [`clz.c`](../../src/c_baseline/clz.c) | C baseline 參考實作 |
 
 ## 測試涵蓋範圍
@@ -37,7 +37,7 @@ Test  9: CLZ(0x00000001) = 31
 Test 10: CLZ(0x00000000) = 32
 ```
 
-上述結果應與 [`expected_output.txt`](../../tests/expected_output.txt)
+上述結果應與 [`expected_output.txt`](../../instructions/19_CLZ/tests/expected_output.txt)
 完全一致；若輸出不同，應先檢查測試向量、`uint32_t` 型別與全零輸入的
 特殊處理。
 

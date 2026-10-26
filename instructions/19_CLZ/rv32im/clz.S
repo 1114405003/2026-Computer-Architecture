@@ -1,15 +1,17 @@
-# CP2: RV32IM CLZ implementation
-# Input:  a0 = 32-bit value
-# Output: a0 = number of leading zero bits
+.section .text
+.align 2
+.globl clz_rv32im
+.type clz_rv32im, @function
 
-    .text
-    .globl clz
-    .type clz, @function
-
-clz:
+# uint32_t clz_rv32im(uint32_t value)
+# a0: input value and return value
+# t0: accumulated leading-zero count
+# t1: temporary shifted value
+clz_rv32im:
     beq     a0, zero, .Lzero
     addi    t0, zero, 0
 
+    # If the upper 16 bits are zero, move the lower half upward.
     srli    t1, a0, 16
     bne     t1, zero, .Lcheck8
     addi    t0, t0, 16
@@ -46,4 +48,4 @@ clz:
     addi    a0, zero, 32
     jalr    zero, 0(ra)
 
-    .size clz, .-clz
+.size clz_rv32im, .-clz_rv32im
