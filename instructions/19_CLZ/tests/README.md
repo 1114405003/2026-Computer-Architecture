@@ -16,6 +16,18 @@
 | 輸入定義 | `rs1` 為 32-bit 位元向量 |
 | 語意公式 | `rd = 前導 0 的個數`，`rs1 = 0` 時 `rd = 32` |
 
+## 檔案索引
+
+| 路徑 | 說明 |
+|---|---|
+| [`src/c_baseline/`](../src/c_baseline/) | CP1 的 `clz.c` 函式與 `main.c` 測試程式 |
+| [`test_vectors.txt`](./test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
+| [`expected_output.txt`](./expected_output.txt) | 測試程式的預期輸出 |
+| [`actual_output.txt`](./actual_output.txt) | LLVM MinGW clang 實際執行輸出 |
+| [`cp3_test.py`](./cp3_test.py) | CP3 語意、邊界值與指令編碼測試 |
+| [`../report/CP1.md`](../report/CP1.md) | CP1 演算法設計、測試結果與分析 |
+| [`../report/CP3.md`](../report/CP3.md) | CP3 測試案例設計、結果整理與編碼驗證 |
+
 CLZ 函式介面如下：
 
 ```c
@@ -71,3 +83,35 @@ gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
 ```text
 10/10 tests passed.
 ```
+### 執行分離的函式與測試程式
+
+在 `instructions/19_CLZ` 目錄中執行：
+
+```text
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
+./clz
+```
+
+程式正常執行時會列出 10 組測試結果，並在每組顯示 `PASS` 或 `FAIL`：
+
+```text
+Test  1: CLZ(0x80000000) = 0 (expected 0) PASS
+Test 10: CLZ(0x00000000) = 32 (expected 32) PASS
+```
+
+完整預期輸出請參考
+[`expected_output.txt`](./expected_output.txt)。
+
+完整實際輸出請參考
+[`actual_output.txt`](./actual_output.txt)。
+
+### CP3 測試
+
+在專案根目錄執行：
+
+```text
+python instructions/19_CLZ/tests/cp3_test.py
+```
+
+此測試會驗證 5 組 CLZ 語意案例，以及 `clz x10, x11` 的 R-type
+編碼與解碼結果；預期為 `6/6 CP3 tests passed.`。
