@@ -1,34 +1,29 @@
-"""CLZ custom instruction: encoding, golden model, and instruction-count comparison.
+"""CLZ custom instruction: encoding, golden model, and instruction counts.
 
 Instruction:  clz rd, rs1   ->   rd = CLZ(rs1)  (32-bit, result 0..32)
 Format:       R-type on custom-0 opcode (0b0001011 = 0x0B)
-              fun7/funct7 = 0, fun3/funct3 = 5, rs2 = 0 (ignored)
-Fields:       7-bit fun7, 5-bit rs2, 5-bit rs1, 3-bit fun3,
+              funct7 = 0b0000000, funct3 = 0b000, rs2 = 0 (ignored)
+Fields:       7-bit funct7, 5-bit rs2, 5-bit rs1, 3-bit funct3,
               5-bit rd, 7-bit opcode
 """
 
 OPCODE_CUSTOM0 = 0b0001011
-FUNCT3_CLZ = 0b101
+FUNCT3_CLZ = 0b000
 FUNCT7_CLZ = 0b0000000
 MASK32 = 0xFFFFFFFF
 
 
-def clz_golden(x: int) -> int:
-    x &= MASK32
-    if x == 0:
+def clz_golden(value: int) -> int:
+    value &= MASK32
+    if value == 0:
         return 32
-    n = 0
-    for i in range(31, -1, -1):
-        if (x >> i) & 1:
-            break
-        n += 1
-    return n
+    return 32 - value.bit_length()
 
 
 def encode_clz(rd: int, rs1: int, rs2: int = 0) -> int:
-    for name, r in (("rd", rd), ("rs1", rs1), ("rs2", rs2)):
-        if not 0 <= r <= 31:
-            raise ValueError(f"{name} out of range: {r}")
+    for name, register in (("rd", rd), ("rs1", rs1), ("rs2", rs2)):
+        if not 0 <= register <= 31:
+            raise ValueError(f"{name} out of range: {register}")
     return (
         (FUNCT7_CLZ << 25)
         | (rs2 << 20)
@@ -53,17 +48,15 @@ def decode_clz(word: int):
     }
 
 
-def apply_clz(regs, rd: int, rs1: int) -> None:
-    regs[0] = 0
+def apply_clz(registers: list[int], rd: int, rs1: int) -> None:
+    registers[0] = 0
     if rd == 0:
         return
-    regs[rd] = clz_golden(regs[rs1])
+    registers[rd] = clz_golden(registers[rs1])
 
 
 def instruction_count_comparison():
-    # Static RV32IM baseline (all instructions in clz.s) vs one custom instruction.
-    rv32im_static = 25
-    custom_static = 1
+    """Static counts plus the four dynamic samples produced by cp2_trace.py."""
     samples = {
         0x80000000: 14,
         0x00010000: 21,
@@ -71,20 +64,30 @@ def instruction_count_comparison():
         0x00000000: 3,
     }
     return {
-        "rv32im_static": rv32im_static,
-        "custom_static": custom_static,
+        "rv32im_binary_search_static": 25,
+        "rv32im_bit_loop_static": 11,
+        "custom_static": 1,
         "dynamic_samples": samples,
-        "dynamic_reduction": {
-            x: round((v - 1) / v * 100, 1) for x, v in samples.items()
+        "dynamic_reduction_percent": {
+            value: round((count - 1) / count * 100, 1)
+            for value, count in samples.items()
         },
     }
 
 
 if __name__ == "__main__":
-    word = encode_clz(10, 11, 0)  # clz a0, a1
-    print(f"clz a0, a1  ->  0x{word:08x}  {word:032b}")
-    print("decode:", decode_clz(word))
-    for x in (0x80000000, 0x00010000, 0x00000001, 0x00000000, 0x00F00000):
-        print(f"CLZ(0x{x:08X}) = {clz_golden(x)}")
+    for rd, rs1 in ((10, 11), (5, 6), (1, 2)):
+        word = encode_clz(rd, rs1)
+        print(
+            f"clz x{rd}, x{rs1}  ->  0x{word:08X}  {word:032b}  "
+            f"decode={decode_clz(word)}"
+        )
+
+    print()
+    for value in (0x80000000, 0x00010000, 0x00000001, 0x00000000, 0x00F00000):
+        print(f"CLZ(0x{value:08X}) = {clz_golden(value)}")
+
+    print()
     import pprint
+
     pprint.pprint(instruction_count_comparison())

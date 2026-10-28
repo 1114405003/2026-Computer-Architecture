@@ -1,0 +1,2 @@
+   text	   data	    bss	    dec	    hex	filename
+   1385	      0	      0	   1385	    569	tests/qemu/clz_qemu.elf

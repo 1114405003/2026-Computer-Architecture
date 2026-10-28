@@ -1,6 +1,11 @@
 # Student-design material: keep out of the repo until the release date
 custom_isa_demo/
 
+# 建置產物
+*.o
+*.exe
+*.elf
+
 # Python / OS artifacts
 __pycache__/
 *.pyc

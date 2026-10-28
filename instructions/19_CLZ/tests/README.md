@@ -1,117 +1,95 @@
 # CLZ 測試資料
 
-本資料夾整合以下測試資料：
-
-- `test_vectors.txt`：10 組輸入向量。
-- `expected_output.txt`：對應的預期輸出。
-- `cp2_trace.py`：CP2 RV32I trace runner。
-
-## CLZ 指令規格
-
-| 項目 | 內容 |
-|---|---|
-| 指令名稱 | `CLZ` |
-| 題目類別 | 算術類 |
-| 運算元類型 | 一元 |
-| 輸入定義 | `rs1` 為 32-bit 位元向量 |
-| 語意公式 | `rd = 前導 0 的個數`，`rs1 = 0` 時 `rd = 32` |
+本資料夾包含 CP1、CP2、CP3 的測試向量、預期輸出、實際輸出與執行證據。
+所有指令都從 `instructions/19_CLZ` 目錄執行。
 
 ## 檔案索引
 
-| 路徑 | 說明 |
+| 檔案 | 說明 |
 |---|---|
-| [`src/c_baseline/`](../src/c_baseline/) | CP1 的 `clz.c` 函式與 `main.c` 測試程式 |
-| [`test_vectors.txt`](./test_vectors.txt) | 10 組輸入與預期 CLZ 值 |
-| [`expected_output.txt`](./expected_output.txt) | 測試程式的預期輸出 |
-| [`actual_output.txt`](./actual_output.txt) | LLVM MinGW clang 實際執行輸出 |
-| [`cp3_test.py`](./cp3_test.py) | CP3 語意、邊界值與指令編碼測試 |
-| [`../report/CP1.md`](../report/CP1.md) | CP1 演算法設計、測試結果與分析 |
-| [`../report/CP3.md`](../report/CP3.md) | CP3 測試案例設計、結果整理與編碼驗證 |
+| [`test_vectors.txt`](./test_vectors.txt) | 12 組 CLZ 輸入向量 |
+| [`expected_output.txt`](./expected_output.txt) | C baseline 的預期輸出 |
+| [`actual_output.txt`](./actual_output.txt) | 實際編譯執行後的輸出 |
+| [`cp2_trace.py`](./cp2_trace.py) | CP2 RV32I 指令層級 trace runner |
+| [`cp2_trace_output.txt`](./cp2_trace_output.txt) | CP2 動態指令數與分支數輸出 |
+| [`cp2_trace_detail.txt`](./cp2_trace_detail.txt) | `0x00010000` 的逐條 trace |
+| [`qemu/`](./qemu/) | QEMU RV32IM 執行用的 startup、linker script 與測試程式 |
+| [`qemu_output.txt`](./qemu_output.txt) | QEMU 實際執行輸出（12/12 PASS） |
+| [`qemu_disassembly.txt`](./qemu_disassembly.txt) | QEMU ELF 的 RV32IM 反組譯 |
+| [`qemu_size.txt`](./qemu_size.txt) | QEMU ELF 的 section 大小 |
+| [`cp3_test.py`](./cp3_test.py) | CP3 語意、編碼與 `rd = x0` 測試 |
+| [`cp3_test_output.txt`](./cp3_test_output.txt) | CP3 測試輸出 |
+| [`cp3_encoding_output.txt`](./cp3_encoding_output.txt) | encoder / decoder / golden model 輸出 |
+| [`EVIDENCE.md`](./EVIDENCE.md) | 工具版本、執行指令與限制 |
 
-CLZ 函式介面如下：
+## 測試向量（12 組）
 
-```c
-uint32_t clz(uint32_t x);
-```
+| 測試 | 輸入 | 預期 CLZ | 說明 |
+|---:|---|---:|---|
+| 1 | `0x80000000` | 0 | bit 31 = 1 |
+| 2 | `0x40000000` | 1 | 1 個前導零 |
+| 3 | `0x20000000` | 2 | 2 個前導零 |
+| 4 | `0x10000000` | 3 | nibble 邊界（bit 28） |
+| 5 | `0x08000000` | 4 | bit 27，4 個前導零 |
+| 6 | `0x01000000` | 7 | byte 邊界（bit 24） |
+| 7 | `0x00100000` | 11 | bit 20 |
+| 8 | `0x00010000` | 15 | 16-bit 邊界 |
+| 9 | `0x00000001` | 31 | 最低位元為 1 |
+| 10 | `0x00000000` | 32 | 全零邊界 |
+| 11 | `0x00F00000` | 8 | 多個相鄰位元為 1 |
+| 12 | `0x0000FFFF` | 16 | 低 16 位元全為 1 |
 
-函式接收一個 32-bit 無號整數，回傳從最高位元開始連續的前導零數量。
-輸入為 `0x00000000` 時，依照規格回傳 `32`。
+## 執行方式
 
-## C baseline 實作方法
-
-實作依序檢查輸入的 16、8、4、2、1 位元區段。若目前區段全部為零，
-就將計數器增加該區段的位元數，並將輸入值左移相同位數，繼續檢查。
-輸入為零時直接回傳 `32`，避免全零值被誤判。
-
-編譯與執行：
+### CP1：C baseline
 
 ```text
-gcc clz.c -std=c11 -Wall -Wextra -Wpedantic -o clz
-./clz
+gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz.exe
+./clz.exe
 ```
 
-## 測試案例
+預期最後一行：`12/12 tests passed.`
 
-目前共有 10 組測試，表格記錄每組輸入與預期 CLZ 結果：
+### CP2：QEMU 實際執行
 
-| 測試 | 輸入 | 預期輸出 | 測試目的 |
-|---:|---|---:|---|
-| 1 | `0x80000000` | `CLZ = 0` | 最高位元為 1 |
-| 2 | `0x40000000` | `CLZ = 1` | 1 個前導零 |
-| 3 | `0x20000000` | `CLZ = 2` | 2 個前導零 |
-| 4 | `0x10000000` | `CLZ = 3` | 3 個前導零 |
-| 5 | `0x08000000` | `CLZ = 4` | nibble 邊界 |
-| 6 | `0x01000000` | `CLZ = 7` | byte 邊界 |
-| 7 | `0x00100000` | `CLZ = 11` | 非邊界位元位置 |
-| 8 | `0x00010000` | `CLZ = 15` | 16-bit 邊界 |
-| 9 | `0x00000001` | `CLZ = 31` | 僅最低位元為 1 |
-| 10 | `0x00000000` | `CLZ = 32` | 零輸入邊界案例 |
-| 11 | `0x00F00000` | `CLZ = 8` | 多個相鄰位元為 1 |
-| 12 | `0x0000FFFF` | `CLZ = 16` | 低 16 位元為 1 |
+```text
+riscv32-unknown-elf-gcc -march=rv32im -mabi=ilp32 -O2 -ffreestanding -fno-builtin -nostdlib -nostartfiles -T tests/qemu/link.ld -o tests/qemu/clz_qemu.elf tests/qemu/start.S src/rv32im/clz.s src/rv32im/clz_loop.s tests/qemu/test_qemu.c
+qemu-system-riscv32 -machine virt -cpu rv32 -bios none -kernel tests/qemu/clz_qemu.elf -nographic -no-reboot
+```
+
+預期最後一行：`12/12 tests passed`
+
+### CP2：指令數 trace
+
+```text
+python tests/cp2_trace.py
+python tests/cp2_trace.py --detail 0x00010000
+```
+
+預期最後一行：`CP2 RV32I trace tests passed.`
+
+### CP3：語意與編碼
+
+```text
+python tests/cp3_test.py
+python spec/clz_encoding.py
+```
+
+預期最後一行：`9/9 CP3 tests passed.`
 
 ## 邊界值
 
-- `0x80000000`：最高位元為 1，前導零數量為 0。
-- `0x00000001`：只有最低位元為 1，前導零數量為 31。
-- `0x00000000`：全零輸入，依規格回傳 32。
+- `0x80000000`：最高位元為 1，CLZ = 0。
+- `0x00000001`：只有最低位元為 1，CLZ = 31。
+- `0x00000000`：全零輸入，依規格 CLZ = 32。
 
-## 預期執行結果
+## 注意
 
-測試程式會逐組比對實際結果與預期結果，並輸出 `PASS` 或 `FAIL`。
-所有測試正確時，最後應輸出：
+- 本資料夾沒有巢狀重複目錄。
+- `CONTRIBUTIONS.md` 位於 `instructions/19_CLZ/CONTRIBUTIONS.md`，不在 `tests/`。
 
-```text
-10/10 tests passed.
-```
-### 執行分離的函式與測試程式
+## 終端截圖
 
-在 `instructions/19_CLZ` 目錄中執行：
+報告引用的終端機截圖放在 [`../report/figures/`](../report/figures/)；
+完整索引見 [`EVIDENCE.md`](./EVIDENCE.md) 第 7 節。
 
-```text
-gcc src/c_baseline/clz.c src/c_baseline/main.c -std=c11 -Wall -Wextra -Wpedantic -o clz
-./clz
-```
-
-程式正常執行時會列出 10 組測試結果，並在每組顯示 `PASS` 或 `FAIL`：
-
-```text
-Test  1: CLZ(0x80000000) = 0 (expected 0) PASS
-Test 10: CLZ(0x00000000) = 32 (expected 32) PASS
-```
-
-完整預期輸出請參考
-[`expected_output.txt`](./expected_output.txt)。
-
-完整實際輸出請參考
-[`actual_output.txt`](./actual_output.txt)。
-
-### CP3 測試
-
-在專案根目錄執行：
-
-```text
-python instructions/19_CLZ/tests/cp3_test.py
-```
-
-此測試會驗證 5 組 CLZ 語意案例，以及 `clz x10, x11` 的 R-type
-編碼與解碼結果；預期為 `6/6 CP3 tests passed.`。

@@ -1,39 +1,52 @@
-# RV32IM baseline for CLZ(x) (input/output in a0)
-# Only RV32I instructions are used.
-
+# uint32_t clz_rv32im(uint32_t value)
+# a0: input value and return value
+# t0: accumulated leading-zero count
+# t1: temporary shifted value
+#
+# Binary-search baseline: check 16, 8, 4, 2, 1 bit groups.
     .text
-    .globl clz
-clz:
-    beq   a0, zero, .Lclz_zero   # x == 0
-    addi  t0, zero, 0           # count = 0
+    .align 2
+    .globl clz_rv32im
+    .type clz_rv32im, @function
 
-    srli  t1, a0, 16            # high 16 bits?
-    bnez  t1, 1f
-    addi  t0, t0, 16
-    slli  a0, a0, 16
-1:
-    srli  t1, a0, 24            # next 8 bits?
-    bnez  t1, 2f
-    addi  t0, t0, 8
-    slli  a0, a0, 8
-2:
-    srli  t1, a0, 28            # next 4 bits?
-    bnez  t1, 3f
-    addi  t0, t0, 4
-    slli  a0, a0, 4
-3:
-    srli  t1, a0, 30            # next 2 bits?
-    bnez  t1, 4f
-    addi  t0, t0, 2
-    slli  a0, a0, 2
-4:
-    srli  t1, a0, 31            # last bit?
-    bnez  t1, 5f
-    addi  t0, t0, 1
-5:
-    addi  a0, t0, 0            # mv a0, t0
+clz_rv32im:
+    beq     a0, zero, .Lclz_zero
+    addi    t0, zero, 0
+
+    srli    t1, a0, 16
+    bnez    t1, .Lclz_8
+    addi    t0, t0, 16
+    slli    a0, a0, 16
+
+.Lclz_8:
+    srli    t1, a0, 24
+    bnez    t1, .Lclz_4
+    addi    t0, t0, 8
+    slli    a0, a0, 8
+
+.Lclz_4:
+    srli    t1, a0, 28
+    bnez    t1, .Lclz_2
+    addi    t0, t0, 4
+    slli    a0, a0, 4
+
+.Lclz_2:
+    srli    t1, a0, 30
+    bnez    t1, .Lclz_1
+    addi    t0, t0, 2
+    slli    a0, a0, 2
+
+.Lclz_1:
+    srli    t1, a0, 31
+    bnez    t1, .Lclz_done
+    addi    t0, t0, 1
+
+.Lclz_done:
+    addi    a0, t0, 0
     ret
 
 .Lclz_zero:
-    addi  a0, zero, 32
+    addi    a0, zero, 32
     ret
+
+    .size clz_rv32im, .-clz_rv32im

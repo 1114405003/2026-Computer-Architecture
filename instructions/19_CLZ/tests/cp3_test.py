@@ -1,4 +1,8 @@
-"""CP3 CLZ semantic and instruction-encoding tests."""
+"""CP3 CLZ semantic and instruction-encoding tests.
+
+Encoding follows the course announcement:
+    custom-0 opcode = 0b0001011, funct3 = 0b000, funct7 = 0b0000000.
+"""
 
 TEST_VECTORS = (
     (0x80000000, 0, "highest bit is one"),
@@ -8,19 +12,27 @@ TEST_VECTORS = (
     (0x00000000, 32, "zero special case"),
 )
 
+# (rd, rs1, expected machine code) for "clz rd, rs1".
+EXAMPLES = (
+    (10, 11, 0x0005850B),
+    (5, 6, 0x0003028B),
+    (1, 2, 0x0001008B),
+)
+
 OPCODE_CUSTOM0 = 0x0B
-FUNCT3_CLZ = 0b101
-FUNCT7_CLZ = 0
+FUNCT3_CLZ = 0b000
+FUNCT7_CLZ = 0b0000000
+MASK32 = 0xFFFFFFFF
 
 
-def clz_golden(value):
-    value &= 0xFFFFFFFF
+def clz_golden(value: int) -> int:
+    value &= MASK32
     if value == 0:
         return 32
     return 32 - value.bit_length()
 
 
-def encode_clz(rd, rs1, rs2=0):
+def encode_clz(rd: int, rs1: int, rs2: int = 0) -> int:
     if not all(0 <= register <= 31 for register in (rd, rs1, rs2)):
         raise ValueError("register number must be in the range 0..31")
     return (
@@ -33,7 +45,7 @@ def encode_clz(rd, rs1, rs2=0):
     )
 
 
-def decode_clz(word):
+def decode_clz(word: int):
     if word & 0x7F != OPCODE_CUSTOM0:
         return None
     if (word >> 25) & 0x7F != FUNCT7_CLZ:
@@ -47,31 +59,49 @@ def decode_clz(word):
     }
 
 
-def main():
+def apply_clz(registers: list[int], rd: int, rs1: int) -> None:
+    registers[0] = 0
+    if rd == 0:
+        return
+    registers[rd] = clz_golden(registers[rs1])
+
+
+def main() -> int:
     passed = 0
+    total = 0
+
     for index, (value, expected, description) in enumerate(TEST_VECTORS, 1):
         actual = clz_golden(value)
-        result = "PASS" if actual == expected else "FAIL"
+        ok = actual == expected
         print(
             f"Test {index}: CLZ(0x{value:08X}) = {actual} "
-            f"(expected {expected}) {result} - {description}"
+            f"(expected {expected}) {'PASS' if ok else 'FAIL'} - {description}"
         )
-        passed += actual == expected
+        passed += ok
+        total += 1
 
-    encoded = encode_clz(rd=10, rs1=11)
-    decoded = decode_clz(encoded)
-    encoding_ok = encoded == 0x0005D50B and decoded == {
-        "rd": 10,
-        "rs1": 11,
-        "rs2": 0,
-    }
-    print(
-        f"Encoding: clz x10, x11 = 0x{encoded:08X} "
-        f"({'PASS' if encoding_ok else 'FAIL'})"
-    )
-    passed += encoding_ok
+    for rd, rs1, expected_word in EXAMPLES:
+        word = encode_clz(rd=rd, rs1=rs1)
+        decoded = decode_clz(word)
+        ok = (
+            word == expected_word
+            and decoded == {"rd": rd, "rs1": rs1, "rs2": 0}
+        )
+        print(
+            f"Encoding: clz x{rd}, x{rs1} = 0x{word:08X} "
+            f"(expected 0x{expected_word:08X}) {'PASS' if ok else 'FAIL'}"
+        )
+        passed += ok
+        total += 1
 
-    total = len(TEST_VECTORS) + 1
+    registers = [0] * 32
+    registers[5] = 123
+    apply_clz(registers, rd=0, rs1=5)
+    rd_zero_ok = registers[0] == 0 and registers[5] == 123
+    print(f"rd = x0 leaves the register file unchanged: {'PASS' if rd_zero_ok else 'FAIL'}")
+    passed += rd_zero_ok
+    total += 1
+
     print(f"{passed}/{total} CP3 tests passed.")
     return 0 if passed == total else 1
 

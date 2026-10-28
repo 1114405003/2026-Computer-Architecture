@@ -1,0 +1,10 @@
+Test 1: CLZ(0x80000000) = 0 (expected 0) PASS - highest bit is one
+Test 2: CLZ(0x40000000) = 1 (expected 1) PASS - one leading zero
+Test 3: CLZ(0x00010000) = 15 (expected 15) PASS - 16-bit boundary
+Test 4: CLZ(0x00000001) = 31 (expected 31) PASS - lowest bit is one
+Test 5: CLZ(0x00000000) = 32 (expected 32) PASS - zero special case
+Encoding: clz x10, x11 = 0x0005850B (expected 0x0005850B) PASS
+Encoding: clz x5, x6 = 0x0003028B (expected 0x0003028B) PASS
+Encoding: clz x1, x2 = 0x0001008B (expected 0x0001008B) PASS
+rd = x0 leaves the register file unchanged: PASS
+9/9 CP3 tests passed.

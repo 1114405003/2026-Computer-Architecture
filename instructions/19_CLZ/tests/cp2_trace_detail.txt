@@ -1,0 +1,125 @@
+input        result   clz.s dyn  clz.s br  loop dyn  loop br
+0x80000000       0         14         6         6        2
+0x40000000       1         15         6        11        3
+0x20000000       2         16         6        16        4
+0x10000000       3         17         6        21        5
+0x08000000       4         16         6        26        6
+0x01000000       7         19         6        41        9
+0x00100000      11         19         6        61       13
+0x00010000      15         21         6        81       17
+0x00000001      31         23         6       161       33
+0x00000000      32          3         1         3        1
+0x00F00000       8         16         6        46       10
+0x0000FFFF      16         16         6        86       18
+
+Detail trace: clz.s, input=0x00010000, result=15, dynamic=21, branches=6
+step  pc  instruction                 a0          t0  t1
+   1   0  beq     a0, zero, .Lclz_zero 0x00010000   0   0
+   2   1  addi    t0, zero, 0        0x00010000   0   0
+   3   2  srli    t1, a0, 16         0x00010000   0   0
+   4   3  bnez    t1, .Lclz_8        0x00010000   0   1
+   5   6  srli    t1, a0, 24         0x00010000   0   1
+   6   7  bnez    t1, .Lclz_4        0x00010000   0   0
+   7   8  addi    t0, t0, 8          0x00010000   0   0
+   8   9  slli    a0, a0, 8          0x00010000   8   0
+   9  10  srli    t1, a0, 28         0x01000000   8   0
+  10  11  bnez    t1, .Lclz_2        0x01000000   8   0
+  11  12  addi    t0, t0, 4          0x01000000   8   0
+  12  13  slli    a0, a0, 4          0x01000000  12   0
+  13  14  srli    t1, a0, 30         0x10000000  12   0
+  14  15  bnez    t1, .Lclz_1        0x10000000  12   0
+  15  16  addi    t0, t0, 2          0x10000000  12   0
+  16  17  slli    a0, a0, 2          0x10000000  14   0
+  17  18  srli    t1, a0, 31         0x40000000  14   0
+  18  19  bnez    t1, .Lclz_done     0x40000000  14   0
+  19  20  addi    t0, t0, 1          0x40000000  14   0
+  20  21  addi    a0, t0, 0          0x40000000  15   0
+  21  22  ret                        0x0000000F  15   0
+
+Detail trace: clz_loop.s, input=0x00010000, result=15, dynamic=81, branches=17
+step  pc  instruction                 a0          t0  t1
+   1   0  beq     a0, zero, .Lloop_zero 0x00010000   0   0
+   2   1  addi    t0, zero, 0        0x00010000   0   0
+   3   2  srli    t1, a0, 31         0x00010000   0   0
+   4   3  bnez    t1, .Lloop_done    0x00010000   0   0
+   5   4  addi    t0, t0, 1          0x00010000   0   0
+   6   5  slli    a0, a0, 1          0x00010000   1   0
+   7   6  jal     zero, .Lloop_test  0x00020000   1   0
+   8   2  srli    t1, a0, 31         0x00020000   1   0
+   9   3  bnez    t1, .Lloop_done    0x00020000   1   0
+  10   4  addi    t0, t0, 1          0x00020000   1   0
+  11   5  slli    a0, a0, 1          0x00020000   2   0
+  12   6  jal     zero, .Lloop_test  0x00040000   2   0
+  13   2  srli    t1, a0, 31         0x00040000   2   0
+  14   3  bnez    t1, .Lloop_done    0x00040000   2   0
+  15   4  addi    t0, t0, 1          0x00040000   2   0
+  16   5  slli    a0, a0, 1          0x00040000   3   0
+  17   6  jal     zero, .Lloop_test  0x00080000   3   0
+  18   2  srli    t1, a0, 31         0x00080000   3   0
+  19   3  bnez    t1, .Lloop_done    0x00080000   3   0
+  20   4  addi    t0, t0, 1          0x00080000   3   0
+  21   5  slli    a0, a0, 1          0x00080000   4   0
+  22   6  jal     zero, .Lloop_test  0x00100000   4   0
+  23   2  srli    t1, a0, 31         0x00100000   4   0
+  24   3  bnez    t1, .Lloop_done    0x00100000   4   0
+  25   4  addi    t0, t0, 1          0x00100000   4   0
+  26   5  slli    a0, a0, 1          0x00100000   5   0
+  27   6  jal     zero, .Lloop_test  0x00200000   5   0
+  28   2  srli    t1, a0, 31         0x00200000   5   0
+  29   3  bnez    t1, .Lloop_done    0x00200000   5   0
+  30   4  addi    t0, t0, 1          0x00200000   5   0
+  31   5  slli    a0, a0, 1          0x00200000   6   0
+  32   6  jal     zero, .Lloop_test  0x00400000   6   0
+  33   2  srli    t1, a0, 31         0x00400000   6   0
+  34   3  bnez    t1, .Lloop_done    0x00400000   6   0
+  35   4  addi    t0, t0, 1          0x00400000   6   0
+  36   5  slli    a0, a0, 1          0x00400000   7   0
+  37   6  jal     zero, .Lloop_test  0x00800000   7   0
+  38   2  srli    t1, a0, 31         0x00800000   7   0
+  39   3  bnez    t1, .Lloop_done    0x00800000   7   0
+  40   4  addi    t0, t0, 1          0x00800000   7   0
+  41   5  slli    a0, a0, 1          0x00800000   8   0
+  42   6  jal     zero, .Lloop_test  0x01000000   8   0
+  43   2  srli    t1, a0, 31         0x01000000   8   0
+  44   3  bnez    t1, .Lloop_done    0x01000000   8   0
+  45   4  addi    t0, t0, 1          0x01000000   8   0
+  46   5  slli    a0, a0, 1          0x01000000   9   0
+  47   6  jal     zero, .Lloop_test  0x02000000   9   0
+  48   2  srli    t1, a0, 31         0x02000000   9   0
+  49   3  bnez    t1, .Lloop_done    0x02000000   9   0
+  50   4  addi    t0, t0, 1          0x02000000   9   0
+  51   5  slli    a0, a0, 1          0x02000000  10   0
+  52   6  jal     zero, .Lloop_test  0x04000000  10   0
+  53   2  srli    t1, a0, 31         0x04000000  10   0
+  54   3  bnez    t1, .Lloop_done    0x04000000  10   0
+  55   4  addi    t0, t0, 1          0x04000000  10   0
+  56   5  slli    a0, a0, 1          0x04000000  11   0
+  57   6  jal     zero, .Lloop_test  0x08000000  11   0
+  58   2  srli    t1, a0, 31         0x08000000  11   0
+  59   3  bnez    t1, .Lloop_done    0x08000000  11   0
+  60   4  addi    t0, t0, 1          0x08000000  11   0
+  61   5  slli    a0, a0, 1          0x08000000  12   0
+  62   6  jal     zero, .Lloop_test  0x10000000  12   0
+  63   2  srli    t1, a0, 31         0x10000000  12   0
+  64   3  bnez    t1, .Lloop_done    0x10000000  12   0
+  65   4  addi    t0, t0, 1          0x10000000  12   0
+  66   5  slli    a0, a0, 1          0x10000000  13   0
+  67   6  jal     zero, .Lloop_test  0x20000000  13   0
+  68   2  srli    t1, a0, 31         0x20000000  13   0
+  69   3  bnez    t1, .Lloop_done    0x20000000  13   0
+  70   4  addi    t0, t0, 1          0x20000000  13   0
+  71   5  slli    a0, a0, 1          0x20000000  14   0
+  72   6  jal     zero, .Lloop_test  0x40000000  14   0
+  73   2  srli    t1, a0, 31         0x40000000  14   0
+  74   3  bnez    t1, .Lloop_done    0x40000000  14   0
+  75   4  addi    t0, t0, 1          0x40000000  14   0
+  76   5  slli    a0, a0, 1          0x40000000  15   0
+  77   6  jal     zero, .Lloop_test  0x80000000  15   0
+  78   2  srli    t1, a0, 31         0x80000000  15   0
+  79   3  bnez    t1, .Lloop_done    0x80000000  15   1
+  80   7  addi    a0, t0, 0          0x80000000  15   1
+  81   8  ret                        0x0000000F  15   1
+
+Static instructions: clz.s = 25, clz_loop.s = 11
+Static conditional branches: clz.s = 6, clz_loop.s = 2
+CP2 RV32I trace tests passed.
